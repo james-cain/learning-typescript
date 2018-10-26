@@ -84,3 +84,69 @@ console.log(Days['Wed'] === 3); // true
 console.log(Days[3] === 'Sun'); // false
 console.log(Days[3] === 'Wed'); // true
 // 递增到3的时候与前面的Sun的取值重复了，但TypeScript并没有吧奥错，导致Days[3]的值先是“sun”，而后又被“Wed”覆盖，编译结果为
+// var Days3;
+// (function (Days3) {
+//     Days3[Days3["Sun"] = 3] = "Sun";
+//     Days3[Days3["Mon"] = 1] = "Mon";
+//     Days3[Days3["Tue"] = 2] = "Tue";
+//     Days3[Days3["Wed"] = 3] = "Wed";
+//     Days3[Days3["Thu"] = 4] = "Thu";
+//     Days3[Days3["Fri"] = 5] = "Fri";
+//     Days3[Days3["Sat"] = 6] = "Sat";
+// })(Days3 || (Days3 = {}));
+// 手动赋值的枚举可以不是数字，但是需要使用类型断言来让tsc无视类型检查（编译出的js仍然是可用的）
+var Days4;
+(function (Days4) {
+    Days4[Days4["Sun"] = 7] = "Sun";
+    Days4[Days4["Mon"] = 8] = "Mon";
+    Days4[Days4["Wed"] = 9] = "Wed";
+    Days4[Days4["Thu"] = 10] = "Thu";
+    Days4[Days4["Fri"] = 11] = "Fri";
+    Days4[Days4["Sat"] = "S"] = "Sat";
+})(Days4 || (Days4 = {}));
+;
+// var Days4;
+// (function (Days4) {
+//     Days4[Days4["Sun"] = 7] = "Sun";
+//     Days4[Days4["Mon"] = 8] = "Mon";
+//     Days4[Days4["Wed"] = 9] = "Wed";
+//     Days4[Days4["Thu"] = 10] = "Thu";
+//     Days4[Days4["Fri"] = 11] = "Fri";
+//     Days4[Days4["Sat"] = "S"] = "Sat";
+// })(Days4 || (Days4 = {}));
+// 手动赋值的枚举项也可以小数或者负数，此时后续未手动赋值的项的递增步长仍为1
+var Days5;
+(function (Days5) {
+    Days5[Days5["Sun"] = 7] = "Sun";
+    Days5[Days5["Mon"] = 1.5] = "Mon";
+    Days5[Days5["Tue"] = 2.5] = "Tue";
+    Days5[Days5["Wed"] = 3.5] = "Wed";
+    Days5[Days5["Thu"] = 4.5] = "Thu";
+    Days5[Days5["Fri"] = 5.5] = "Fri";
+    Days5[Days5["Sat"] = 6.5] = "Sat";
+})(Days5 || (Days5 = {}));
+;
+console.log(Days5["Sun"] === 7); // true
+console.log(Days5["Mon"] === 1.5); // true
+console.log(Days5["Tue"] === 2.5); // true
+// 枚举项可以是常数项和计算所得项
+// 但是计算所得项后面不能放未手动赋值的项，否则会因为无法获得初始值而报错
+// 不会报错的情况：
+var Color;
+(function (Color) {
+    Color[Color["Red"] = 0] = "Red";
+    Color[Color["Green"] = 1] = "Green";
+    Color[Color["Blue"] = "blue".length] = "Blue";
+})(Color || (Color = {}));
+;
+// 会报错的情况：
+var Color2;
+(function (Color2) {
+    Color2[Color2["Red"] = "red".length] = "Red";
+    Color2[Color2["Green"] = void 0] = "Green";
+    Color2[Color2["Blue"] = void 0] = "Blue";
+})(Color2 || (Color2 = {}));
+;
+var directions = [0 /* Up */, 1 /* Down */, 2 /* Left */, 3 /* Right */];
+var directions2 = [Directions2.Up, Directions2.Down, Directions2.Left, Directions2.Right];
+var directions3 = [0 /* Up */, 1 /* Down */, 2 /* Left */, 3 /* Right */];

@@ -80,3 +80,103 @@ console.log(Days[3] === 'Wed'); // true
 //     Days3[Days3["Fri"] = 5] = "Fri";
 //     Days3[Days3["Sat"] = 6] = "Sat";
 // })(Days3 || (Days3 = {}));
+
+// 手动赋值的枚举可以不是数字，但是需要使用类型断言来让tsc无视类型检查（编译出的js仍然是可用的）
+enum Days4 { Sun = 7, Mon, Wed, Thu, Fri, Sat = <any>"S"};
+// var Days4;
+// (function (Days4) {
+//     Days4[Days4["Sun"] = 7] = "Sun";
+//     Days4[Days4["Mon"] = 8] = "Mon";
+//     Days4[Days4["Wed"] = 9] = "Wed";
+//     Days4[Days4["Thu"] = 10] = "Thu";
+//     Days4[Days4["Fri"] = 11] = "Fri";
+//     Days4[Days4["Sat"] = "S"] = "Sat";
+// })(Days4 || (Days4 = {}));
+
+// 手动赋值的枚举项也可以小数或者负数，此时后续未手动赋值的项的递增步长仍为1
+enum Days5 { Sun = 7, Mon = 1.5, Tue, Wed, Thu, Fri, Sat};
+console.log(Days5["Sun"] === 7); // true
+console.log(Days5["Mon"] === 1.5); // true
+console.log(Days5["Tue"] === 2.5); // true
+
+// 枚举项可以是常数项和计算所得项
+// 但是计算所得项后面不能放未手动赋值的项，否则会因为无法获得初始值而报错
+// 不会报错的情况：
+enum Color { Red, Green, Blue = "blue".length };
+// 会报错的情况：
+enum Color2 { Red = "red".length, Green, Blue };
+// index.ts:107:35 - error TS1061: Enum member must have initializer.
+// index.ts:107:42 - error TS1061: Enum member must have initializer.
+
+// 常数枚举 使用const enum 定义的枚举类型
+// 常数枚举和普通枚举的区别是，它会在编译阶段被删除，并且不能包含计算成员
+const enum Directions {
+  Up,
+  Down,
+  Left,
+  Right
+}
+let directions = [Directions.Up, Directions.Down, Directions.Left, Directions.Right];
+// 编译后的结果：
+// var directions = [0 /* Up */, 1 /* Down */, 2 /* Left */, 3 /* Right */];
+
+// 如果包含计算成员，在编译阶段会报错：
+// const enum Color3 {
+//   Red,
+//   Green,
+//   Blue = "blue".length
+// }
+// index.ts:128:10 - error TS2474: In 'const' enum declarations member initializer must be constant expression.
+
+// 外部枚举（Ambient Enums） 使用declare enum定义的枚举类型
+declare enum Directions2 {
+  Up,
+  Down,
+  Left,
+  Right
+}
+let directions2 = [Directions2.Up, Directions2.Down, Directions2.Left, Directions2.Right];
+// declare定义的类型只会用于编译时的检查，编译结果中会被删除
+// 编译后的结果：
+// var directions2 = [Directions2.Up, Directions2.Down, Directions2.Left, Directions2.Right];
+
+// 同时使用declare 和 const 也是可以的
+declare const enum Directions3 {
+  Up,
+  Down,
+  Left,
+  Right
+}
+let directions3 = [Directions3.Up, Directions3.Down, Directions3.Left, Directions3.Right];
+// 编译后的结果：
+// var directions3 = [0 /* Up */, 1 /* Down */, 2 /* Left */, 3 /* Right */];
+
+// 类
+// 属性和方法 使用constructor定义构造函数
+class Animal {
+  constructor(name) {
+    this.name = name;
+  }
+  sayHi() {
+    return `My name is ${this.name}`;
+  }
+}
+
+let a = new Animal('Rey');
+console.log(a.sayHi()); // my name is Rey
+
+// 类的继承 使用extends关键字实现继承，子类中使用super关键字来调用父类的构造函数和方法
+class Cat extends Animal {
+  constructor(name) {
+    super(name); // 调用父类的constructor(name)
+    console.log(this.name);
+  }
+  sayHi() {
+    return 'hello,' + super.sayHi();
+  }
+}
+
+let cat = new Cat('Rey');
+console.log(cat.sayHi()); // hello,My name is Rey
+
+// 存取器 使用getter和setter可以改变属性的赋值和读取行为
