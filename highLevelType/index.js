@@ -1,3 +1,16 @@
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    }
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 function getName(n) {
     if (typeof n === 'string') {
         return n;
@@ -150,3 +163,183 @@ var Color2;
 var directions = [0 /* Up */, 1 /* Down */, 2 /* Left */, 3 /* Right */];
 var directions2 = [Directions2.Up, Directions2.Down, Directions2.Left, Directions2.Right];
 var directions3 = [0 /* Up */, 1 /* Down */, 2 /* Left */, 3 /* Right */];
+// 编译后的结果：
+// var directions3 = [0 /* Up */, 1 /* Down */, 2 /* Left */, 3 /* Right */];
+// 类
+// 属性和方法 使用constructor定义构造函数
+var Animal = /** @class */ (function () {
+    function Animal(name) {
+        this.name = name;
+    }
+    Animal.prototype.sayHi = function () {
+        return "My name is " + this.name;
+    };
+    Animal.isAnimal = function (a) {
+        return a instanceof Animal;
+    };
+    return Animal;
+}());
+var a = new Animal('Rey');
+console.log(a.sayHi()); // my name is Rey
+// 类的继承 使用extends关键字实现继承，子类中使用super关键字来调用父类的构造函数和方法
+// 存取器 使用getter和setter可以改变属性的赋值和读取行为
+// 使用static修饰符的方法称为静态方法，不需要实例化，直接通过类来调用
+var Cat = /** @class */ (function (_super) {
+    __extends(Cat, _super);
+    function Cat(name) {
+        var _this = _super.call(this, name) || this;
+        console.log(_this.name);
+        return _this;
+    }
+    Object.defineProperty(Cat.prototype, "name", {
+        get: function () {
+            return 'shieh';
+        },
+        set: function (value) {
+            console.log('setter:' + value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Cat.prototype.sayHi = function () {
+        return 'hello,' + _super.prototype.sayHi.call(this);
+    };
+    return Cat;
+}(Animal));
+var cat = new Cat('Rey');
+console.log(cat.sayHi()); // hello,My name is Rey
+cat.name = 'Tom';
+console.log(cat.name);
+Animal.isAnimal(cat); // true
+// a.isAnimal(cat); // TypeError: a.isAnimal is not a function
+// ES7中类的用法
+// 实例属性 ES6中实例的属性只能通过构造函数中的this.xxx来定义，ES7提案中可以直接在类里面定义：
+// 静态属性 ES7提案中，可以使用static 定义静态属性
+var Animal2 = /** @class */ (function () {
+    function Animal2() {
+        this.name = 'Rey';
+        // ...
+    }
+    Animal2.num = 42;
+    return Animal2;
+}());
+var a2 = new Animal2();
+console.log(a2.name); // Rey
+console.log(Animal2.num); // 42
+// TypeScript中类的用法
+// public private 和 protected
+// public修饰的属性或方法是共有的，可以在任何地方被访问，默认所有的属性和方法都是public
+// private修饰的属性或方法是私有的，不能再声明它的类的外部访问
+// protected修饰的属性或方法是受保护的，和private类似，区别是它在子类中也是允许被访问的
+// 需要注意的是，TypeScript编译之后的代码中，并没有限制private属性在外部的可访问性
+// 抽象类 abstract用于定义抽象类和其中的抽象方法
+// 抽象类是不允许被实例化的
+// abstract class Animal3 {
+//   public name;
+//   public constructor(name) {
+//     this.name = name;
+//   }
+//   public abstract sayHi();
+// }
+// let a3 = new Animal3('Rey');
+// index.ts:232:10 - error TS2511: Cannot create an instance of an abstract class.
+// 抽象类中的抽象方法必须被子类实现：
+// abstract class Animal3 {
+//   public name;
+//   public constructor(name) {
+//     this.name = name;
+//   }
+//   public abstract sayHi();
+// }
+// class Cat2 extends Animal3 {
+//   public eat() {
+//     console.log(`${this.name} is eating.`);
+//   }
+// }
+// let cat2 = new Cat2('Rey');
+// index.ts:244:7 - error TS2515: Non-abstract class 'Cat2' does not implement inherited abstract member 'sayHi' from class 'Animal3'.
+var Animal3 = /** @class */ (function () {
+    function Animal3(name) {
+        this.name = name;
+    }
+    return Animal3;
+}());
+var Cat2 = /** @class */ (function (_super) {
+    __extends(Cat2, _super);
+    function Cat2() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    Cat2.prototype.sayHi = function () {
+        console.log("My name is " + this.name + ".");
+    };
+    return Cat2;
+}(Animal3));
+var cat2 = new Cat2('Rey');
+// 类的类型，与接口类似
+var Animal4 = /** @class */ (function () {
+    function Animal4(name) {
+        this.name = name;
+    }
+    Animal4.prototype.sayHi = function () {
+        return "my name is " + this.name;
+    };
+    return Animal4;
+}());
+var a4 = new Animal4('Rey');
+console.log(a4.sayHi());
+var Car = /** @class */ (function () {
+    function Car() {
+    }
+    Car.prototype.alert = function () {
+        console.log('Car alert');
+    };
+    Car.prototype.lightOn = function () {
+        console.log('Car light on');
+    };
+    Car.prototype.lightOff = function () {
+        console.log('Car light off');
+    };
+    return Car;
+}());
+// 接口继承类
+var Point = /** @class */ (function () {
+    function Point() {
+    }
+    return Point;
+}());
+var mySearch;
+mySearch = function (source, subString) {
+    return source.search(subString) !== -1;
+};
+function getCounter() {
+    var counter = function (start) { };
+    counter.interval = 123;
+    counter.reset = function () { };
+    return counter;
+}
+var c = getCounter();
+c(10);
+c.reset();
+c.interval = 5.0;
+// 泛型(Generics) 在定义函数、接口或类的时候，不预先指定具体的类型，而在使用的时候再指定类型的一种特性
+function createArray(length, value) {
+    var result = [];
+    for (var i = 0; i < length; i++) {
+        result[i] = value;
+    }
+    return result;
+}
+createArray(3, 'x');
+// 也可以不手动指定，让类型推论自动推算出来：
+createArray(3, 'x');
+// 一次定义多个类型参数
+function swap(tuple) {
+    return [tuple[1], tuple[0]];
+}
+swap([7, 'seven']); // ['seven', 7]
+function loggingIdentify(arg) {
+    console.log(arg.length);
+    return arg;
+}
+// 该例中使用extends榆树了泛型T必须包含length属性，若没有，编译阶段就会报错
+loggingIdentify(7);
