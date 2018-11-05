@@ -468,3 +468,189 @@ function applyMixins(derivedCtor: any, baseCtors: any) {
     })
   })
 }
+
+// Decorators
+// 若要启用实验性的装饰器特性，必须在命令行或tsconfig.json里启用experimentalDecorators编译器选项：
+// 命令行：
+// tsc --target ES5 experimentalDecorators
+// tsconfig.json
+// {
+//   "compilerOptions": {
+//     "target": "ES5",
+//     "experimentalDecorators": true
+//   }
+// }
+// 装饰器，是一种特殊类型的声明，能够被附加到类声明、方法、访问符、属性或参数上
+// 使用@expression形式，expression求值后必须为一个函数，会在运行时被调用，被装饰的声明信息作为参数传入
+// 装饰器组合
+// 多个装饰器可以同时应用到一个声明上，示例：
+// @f
+// @g
+// x
+// 当多个装饰器应用与一个声明上，它们求值方式与复合函数相似。上例实际等同于f(g(x))
+// 在typescript里，当多个装饰器应用在一个声明上时会进行如下步骤的操作：
+// 1. 由上至下依次对装饰器表达式求值
+// 2. 求值的结果会被当做函数，由下至上依次调用
+// 例子
+function f() {
+  console.log('f(): evaluated');
+  return function(target, propertyKey: string, descriptor: PropertyDescriptor) {
+    console.log('f(): called');
+  }
+}
+function g() {
+  console.log('g(): evaluated');
+  return function(target, propertyKey: string, descriptor: PropertyDescriptor) {
+    console.log('g(): called');
+  }
+}
+class C {
+  @f()
+  @g()
+  method() {}
+}
+// 在控制台中会打印结果：
+// f(): evaluated
+// g(): evaluated
+// g(): called
+// f(): called
+
+// 装饰器求值
+// 类中不同声明上的装饰器将按以下规定的顺序应用：
+// 1. 参数装饰器，然后依次是方法装饰器，访问符装饰器，或属性装饰器应用到每个实例成员
+// 2. 参数装饰器，然后依次是方法装饰器，访问符装饰器，或属性装饰器应用到每个静态成员
+// 3. 参数装饰器应用到构造函数
+// 4. 类装饰器应用到类
+
+// 类装饰器
+// 类装饰器表达式会在运行时当做函数被调用，类的构造函数作为其唯一的参数
+// 如果类装饰器返回一个值，它会使用提供的构造函数来替换类的声明。因此，如果要返回一个新的构造函数，必须注意处理好原来的原型链。在运行时的装饰器调用逻辑中不会做这些操作
+// 密封实例
+@sealed
+class Greeter2 {
+  greeting: string;
+  constructor(message: string) {
+    this.greeting = message;
+  }
+  greet() {
+    return 'Hello, ' + this.greeting;
+  }
+}
+function sealed(constructor: Function) {
+  Object.seal(constructor);
+  Object.seal(constructor.prototype);
+}
+// 当@sealed被执行时，它将密封此类的构造函数和原型
+// 重载构造函数实例
+function classDecorator<T extends {new(...args: any[]): {}}>(constructor: T) {
+  return class extends constructor {
+    newProperty = 'new property';
+    hello = 'override';
+  }
+}
+@classDecorator
+class Greeter3 {
+  property = 'property';
+  hello: string;
+  constructor(m: string) {
+    this.hello = m;
+  }
+}
+console.log(new Greeter3('world'));
+
+// 方法装饰器，方法装饰器会被应用到方法的属性描述符上，可以用来监视，修改或替换方法定义
+// 方法装饰器表达式会在运行时当做函数被调用，传入下列3个参数：
+// 1. 对于静态成员来说是类的构造函数，对于实例成员是类的原型对象
+// 2. 成员的名字
+// 3. 成员的属性描述符
+// 如果方法装饰器返回一个值，会被用作方法的属性描述符
+// 实例：
+class Greeter4 {
+  greeting: string;
+  constructor(message: string) {
+    this.greeting = message;
+  }
+
+  @enumerable(false)
+  greet() {
+    return 'Hello, ' + this.greeting;
+  }
+}
+function enumerable(value: boolean) {
+  return function(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    descriptor.enumerable = value;
+  }
+}
+
+// 访问器装饰器，访问器装饰器应用于访问器的属性描述符并且用来监视，修改或替换一个访问器的定义
+// Typescript不允许同时装饰一个成员的get和set访问器
+// 访问器装饰器表达式会在运行时当做函数被调用，传入下列3个参数：
+// 1. 对于静态成员来说是类的构造函数，对于实例成员是类的原型对象
+// 2. 成员的名字
+// 3. 成员的属性描述符
+// 如果访问器装饰器返回一个值，会被用作方法的属性描述符
+// 实例：
+class Point {
+  private _x: number;
+  private _y: number;
+  constructor(x: number, y: number) {
+    this._x = x;
+    this._y = y;
+  }
+
+  @configurable(false)
+  get x() {
+    return this._x;
+  }
+
+  @configurable(false)
+  get y() {
+    return this._y;
+  }
+}
+function configurable(value: boolean) {
+  return function(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    descriptor.configurable = value;
+  }
+}
+
+// 属性装饰器
+// 属性装饰器表达式会在运行时当做函数被掉员工，传入下列2个参数
+// 1. 对于静态成员来说是类的构造函数，对于实例成员是类的原型对象
+// 2. 成员的名字
+// 实例：
+class Greeter5 {
+  @format('Hello, %s')
+  greeting: string;
+  constructor(message: string) {
+    this.greeting = message;
+  }
+  greet() {
+    let formatString = getFormat(this, 'greeting');
+    return formatString.replace('%s', this.greeting);
+  }
+}
+import 'reflect-metadata';
+const formatMetadataKey = Symbol('format');
+function format(formatString: string) {
+  return Reflect.metadata(formatMetadataKey, formatString);
+}
+function getFormat(traget: any, propertyKey: string) {
+  return Reflect.getmetadata(formatMetadataKey, target, propertyKey);
+}
+
+// 参数装饰器，参数构造器应用于类构造函数或方法声明
+// 参数装饰器表达式会在运行时当做函数被调用，传入下列3个参数：
+// 1. 对于静态成员来说是类的构造函数，对于实例成员是类的原型对象
+// 2. 成员的名字
+// 3. 参数在函数参数列表中的索引
+// 参数装饰器只能用来监视一个方法的参数是否被传入，参数装饰器的返回值会被忽略
+
+// 三斜线指令，仅放在包含它的文件的最顶端
+// 方式一：
+// /// <reference path="..." />
+// 用于声明文件间的依赖，三斜线引用告诉编译器在编译过程中要引入的额外的文件
+// 方式二：
+// /// <reference types="..." />
+// 与方式一相似，这个指令是用来声明依赖的。对这些包的名字的解析与在import语句里对模块名的解析类似，可以简单的把三斜线类型引用指令当做import声明包
+// 例如，把/// <reference types="node" /> 引入到声明文件，表明这个文件使用了@types/node/index.d.ts里面声明的名字；并且这个包需要在编译阶段与声明文件一起被包含进来
