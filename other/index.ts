@@ -421,6 +421,50 @@ namespace Color {
 }
 // 4. 非法的合并。目前类不能与其他类或变量合并
 
+// 模块扩展
+// JavaScript不支持合并，但可以为导入的对象打补丁更新它们
+// observable.js
+export class Observable<T> {
+  // ...
+}
+// map.js
+import { Observable } from './observable';
+Observable.prototype.map = function(f) {
+  // ...
+}
+// 以上可以很好的工作，但是编译器对Observable.prototype.map一无所知。可以使用扩展模块来告诉编译器：
+// map.ts
+import { Observable } from './observable';
+declare module './observable' {
+  interface Observable<T> {
+    map<U>(f: (x: T) => U): Observable<U>;
+  }
+}
+Observable.prototype.map = function(f) {
+  // ...
+}
+// consumer.ts
+import { Observable } from './observable';
+import './map';
+let o: Observable<number>;
+o.map(x => x.toFixed());
+
+// 全局扩展
+// 可以在模块内部添加声明到全局作用域中
+// observable.ts
+export class Observable<T> {
+  // ...
+}
+declare global {
+  interface Array<T> {
+    toObservable(): Observable<T>;
+  }
+}
+Array.prototype.toObservable = function() {
+  // ...
+}
+// 全局扩展与模块扩展的行为和限制是相同的
+
 // 混入
 class Disposable {
   isDisposed: boolean;
